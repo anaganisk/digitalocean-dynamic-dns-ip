@@ -1,0 +1,10 @@
+{
+  "apikey": "samplekeydasjkdhaskjdhrwofihsamplekey",
+  "domain": "example.com",
+  "records": [
+    {
+      "name": "subdomain",
+      "type": "A"
+    }
+  ]
+}
