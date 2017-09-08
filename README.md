@@ -2,7 +2,10 @@
 A simple script in Go language to automatically update Digital ocean DNS records if you have a dynamic IP. Since it can be compiled on any platform, you can use it along with raspberrypi etc.
 
 ## requirements
-Requires Git and Go for building
+Requires Git and Go for building.
+
+Requires that the record already exists in DigitalOcean's DNS.
+
 ## Usage
 ```bash
 git clone https://github.com/anaganisk/digitalocean-dynamic-dns-ip.git
