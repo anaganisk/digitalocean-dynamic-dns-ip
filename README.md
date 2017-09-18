@@ -10,7 +10,7 @@ Requires that the record already exists in DigitalOcean's DNS.
 ```bash
 git clone https://github.com/anaganisk/digitalocean-dynamic-dns-ip.git
 ```
-create a file config.json and place it same directory as this script and add the following json
+create a file ".digitalocean-dynamic-ip.json"(dot prefix to hide the file) and place it user home directory and add the following json
 
 ```json
 {
