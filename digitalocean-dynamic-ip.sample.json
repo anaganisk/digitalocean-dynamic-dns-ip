@@ -1,10 +1,23 @@
 {
   "apikey": "samplekeydasjkdhaskjdhrwofihsamplekey",
-  "domain": "example.com",
-  "records": [
+  "domains": [
     {
-      "name": "subdomain",
-      "type": "A"
+      "domain": "example.com",
+      "records": [
+        {
+          "name": "subdomainOrRecord",
+          "type": "A"
+        }
+      ]
+    },
+    {
+      "domain": "example2.com",
+      "records": [
+        {
+          "name": "subdomainOrRecord2",
+          "type": "A"
+        }
+      ]
     }
   ]
 }
