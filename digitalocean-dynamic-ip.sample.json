@@ -3,6 +3,7 @@
   "doPageSize": 20,
   "useIPv4": true,
   "useIPv6": true,
+  "allowIPv4InIPv6": false,
   "domains": [
     {
       "domain": "example.com",

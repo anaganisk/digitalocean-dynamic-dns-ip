@@ -23,6 +23,7 @@ create a file ".digitalocean-dynamic-ip.json"(dot prefix to hide the file) and p
   "doPageSize" : 20,
   "useIPv4": true,
   "useIPv6": false,
+  "allowIPv4InIPv6": false,
   "domains": [
     {
       "domain": "example.com",
@@ -48,9 +49,11 @@ create a file ".digitalocean-dynamic-ip.json"(dot prefix to hide the file) and p
 ```
 The TTL can optionally be updated if passed in the configuration. Digital Ocean has a minimum TTL of 30 seconds. The `type` and the `name` must match existing records in the Digital Ocean DNS configuration. Only `types` of `A` and `AAAA` allowed at the moment.
 
-If you want to reduce the number of calls made to the digital ocean API and have more than 20 DNS records in your domain, you can adjust the `doPageSize` parameter. By default, Digital Ocean returns 20 records per page.
+If you want to reduce the number of calls made to the digital ocean API and have more than 20 DNS records in your domain, you can adjust the `doPageSize` parameter. By default, Digital Ocean returns 20 records per page. Digital Ocean has a max page size of 200 items.
 
 By default, the configuration checks both IPv4 and IPv6 addresses assuming your provider set up your connection as dual stack. If you know you only have ipv4 or ipv6 you can disable using one or the other in the config. To disable one or the other, set the `useIPv4` or `useIPv6` settings to `false`. If the options aren't present, or are set to `null`, then the configuration assumes a value of `true`.
+
+The `allowIPv4InIPv6` configuration option will allow adding an IPv4 address to be used in a AAAA record for IPv6 lookups.
 
 ```bash
 #run
