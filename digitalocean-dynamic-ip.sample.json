@@ -1,6 +1,8 @@
 {
   "apikey": "samplekeydasjkdhaskjdhrwofihsamplekey",
-  "doPageSize" : 20,
+  "doPageSize": 20,
+  "useIPv4": true,
+  "useIPv6": true,
   "domains": [
     {
       "domain": "example.com",

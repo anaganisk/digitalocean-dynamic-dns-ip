@@ -28,6 +28,8 @@ var config ClientConfig
 type ClientConfig struct {
 	APIKey     string   `json:"apiKey"`
 	DOPageSize int      `json:"doPageSize"`
+	UseIPv4    *bool    `json:"useIPv4"`
+	UseIPv6    *bool    `json:"useIPv6"`
 	Domains    []Domain `json:"domains"`
 }
 
@@ -111,14 +113,49 @@ func usage() {
 	))
 }
 
-//CheckLocalIP : get current IP of server.
-func CheckLocalIP() string {
-	currentIPRequest, err := http.Get("https://diagnostic.opendns.com/myip")
+//CheckLocalIPs : get current IP of server. checks both IPv4 and Ipv6 to support dual stack environments
+func CheckLocalIPs() (ipv4, ipv6 net.IP) {
+	var ipv4String, ipv6String string
+
+	if config.UseIPv4 == nil || *(config.UseIPv4) {
+		ipv4String, _ = getURLBody("https://ipv4bot.whatismyipaddress.com")
+		if ipv4String == "" {
+			log.Println("No IPv4 address found. Consider disabling IPv4 checks in the config `\"useIPv4\": false`")
+		} else {
+			ipv4 = net.ParseIP(ipv4String)
+			if ipv4 != nil {
+				// make sure we got back an actual ipv4 address
+				ipv4 = ipv4.To4()
+			}
+			if ipv4 == nil {
+				log.Printf("Unable to parse `%s` as an IPv4 address\n", ipv4String)
+			}
+		}
+	}
+
+	if config.UseIPv6 == nil || *(config.UseIPv6) {
+		ipv6String, _ = getURLBody("https://ipv6bot.whatismyipaddress.com")
+		if ipv6String == "" {
+			log.Println("No IPv6 address found. Consider disabling IPv6 checks in the config `\"useIPv6\": false`")
+		} else {
+			ipv6 = net.ParseIP(ipv6String)
+			if ipv6 == nil {
+				log.Printf("Unable to parse `%s` as an IPv4 address\n", ipv6String)
+			}
+		}
+	}
+	return ipv4, ipv6
+}
+
+func getURLBody(url string) (string, error) {
+	request, err := http.Get(url)
+	if err != nil {
+		return "", err
+	}
+	defer request.Body.Close()
+	body, err := ioutil.ReadAll(request.Body)
 	checkError(err)
-	defer currentIPRequest.Body.Close()
-	currentIPRequestParse, err := ioutil.ReadAll(currentIPRequest.Body)
-	checkError(err)
-	return string(currentIPRequestParse)
+	return string(body), nil
 }
 
 //GetDomainRecords : Get DNS records of current domain.
@@ -156,13 +193,7 @@ func getPage(url string) DOResponse {
 }
 
 // UpdateRecords : Update DNS records of domain
-func UpdateRecords(domain string, ip net.IP, toUpdateRecords []DNSRecord) {
-	currentIP := ip.String()
-	isIpv6 := ip.To4() == nil
-	if !isIpv6 {
-		// make sure we are using a v4 format
-		currentIP = ip.To4().String()
-	}
+func UpdateRecords(domain string, ipv4, ipv6 net.IP, toUpdateRecords []DNSRecord) {
 	log.Printf("%s: %d to update\n", domain, len(toUpdateRecords))
 	updated := 0
 	doRecords := GetDomainRecords(domain)
@@ -174,17 +205,28 @@ func UpdateRecords(domain string, ip net.IP, toUpdateRecords []DNSRecord) {
 	log.Printf("%s: %d DNS records found", domain, len(doRecords))
 	for _, toUpdateRecord := range toUpdateRecords {
 		if toUpdateRecord.Type != "A" && toUpdateRecord.Type != "AAAA" {
-			log.Fatalf("%s: Unsupported type (Only A and AAAA records supported) for updates %+v", domain, toUpdateRecord)
+			log.Printf("%s: Unsupported type (Only A and AAAA records supported) for updates %+v", domain, toUpdateRecord)
+			continue
 		}
-		if isIpv6 && toUpdateRecord.Type == "A" {
-			log.Fatalf("%s: You are trying to update an IPV4 A record with an IPV6 address: new ip: %s, config: %+v", domain, currentIP, toUpdateRecord)
+		if ipv4 == nil && toUpdateRecord.Type == "A" {
+			log.Printf("%s: You are trying to update an IPv4 A record with no IPv4 address: config: %+v", domain, toUpdateRecord)
+			continue
 		}
-		if !isIpv6 && toUpdateRecord.Type == "AAAA" {
-			log.Fatalf("%s: You are trying to update an IPV6 A record with an IPV4 address: new ip: %s, config: %+v", domain, currentIP, toUpdateRecord)
+		if ipv6 == nil && toUpdateRecord.Type == "AAAA" {
+			log.Printf("%s: You are trying to update an IPv6 AAAA record with no IPv6 address: config: %+v", domain, toUpdateRecord)
+			continue
 		}
 		if toUpdateRecord.ID > 0 {
 			// update the record directly. skip the extra search
-			log.Fatalf("%s: Unable to directly update records yet. Record: %+v", domain, toUpdateRecord)
+			log.Printf("%s: Unable to directly update records yet. Record: %+v", domain, toUpdateRecord)
+			continue
+		}
+
+		var currentIP string
+		if toUpdateRecord.Type == "A" {
+			currentIP = ipv4.String()
+		} else {
+			currentIP = ipv6.String()
 		}
 
 		log.Printf("%s: trying to update `%s` : `%s`", domain, toUpdateRecord.Type, toUpdateRecord.Name)
@@ -225,15 +267,17 @@ func UpdateRecords(domain string, ip net.IP, toUpdateRecords []DNSRecord) {
 
 func main() {
 	config = GetConfig()
-	currentIP := CheckLocalIP()
-	ip := net.ParseIP(currentIP)
-	if ip == nil {
-		log.Fatalf("current IP address `%s` is not a valid IP address", currentIP)
+	currentIPv4, currentIPv6 := CheckLocalIPs()
+	if currentIPv4 == nil && currentIPv6 == nil {
+		log.Fatalf("current IP addresses are not a valid, or both are disabled in the config. Check you configuration and internet connection",
+			currentIPv4,
+			currentIPv6,
+		)
 	}
 	for _, domain := range config.Domains {
 		domainName := domain.Domain
 		log.Printf("%s: START\n", domainName)
-		UpdateRecords(domainName, ip, domain.Records)
+		UpdateRecords(domainName, currentIPv4, currentIPv6, domain.Records)
 		log.Printf("%s: END\n", domainName)
 	}
 }
