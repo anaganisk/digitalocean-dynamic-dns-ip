@@ -1,5 +1,6 @@
 {
   "apikey": "samplekeydasjkdhaskjdhrwofihsamplekey",
+  "doPageSize" : 20,
   "domains": [
     {
       "domain": "example.com",
