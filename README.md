@@ -3,13 +3,18 @@ A simple script in Go language to automatically update Digital ocean DNS records
 
 To find your Dynamic IP, this program will call out to https://ipv4bot.whatismyipaddress.com for ipv4 addresses and https://ipv6bot.whatismyipaddress.com for ipv6 addresses. This is to support dual-stack environments.
 
-## requirements
-Requires Git and Go for building.
+## Requirements
+Requires Git, Go 1.8+, and https://github.com/mitchellh/go-homedir for building.
 
 Requires that the record already exists in DigitalOcean's DNS so that it can be updated.
 (manually find your IP and add it to DO's DNS it will later be updated)
 
 Requires a Digital Ocean API key that can be created at https://cloud.digitalocean.com/account/api/tokens.
+
+## Building
+You first need to install the "homedir" module if you aren't using it in another project. To install the module, run `go get github.com/mitchellh/go-homedir`
+
+Once the module is fetched, you should be able to compile the program using `go build`
 
 ## Usage
 ```bash
