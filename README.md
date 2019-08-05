@@ -67,9 +67,9 @@ go build digitalocean-dynamic-ip.go
 ```
 
 Optionally, you can create the configuration file with any name wherever you want, and pass it as a command line argument:
-````bash
+```bash
 #run
-./digitalocean-dynamic-ip /path/tp/my/config.json
+./digitalocean-dynamic-ip /path/to/my/config.json
 ```
 
 You can either set this to run periodically with a cronjob or use your own method.
