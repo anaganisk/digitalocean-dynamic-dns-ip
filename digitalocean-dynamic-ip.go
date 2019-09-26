@@ -31,6 +31,8 @@ type ClientConfig struct {
 	DOPageSize      int      `json:"doPageSize"`
 	UseIPv4         *bool    `json:"useIPv4"`
 	UseIPv6         *bool    `json:"useIPv6"`
+	IPv4CheckURL    string   `json:"ipv4CheckUrl"`
+	IPv6CheckURL    string   `json:"ipv6CheckUrl"`
 	AllowIPv4InIPv6 bool     `json:"allowIPv4InIPv6"`
 	Domains         []Domain `json:"domains"`
 }
@@ -118,9 +120,17 @@ func usage() {
 //CheckLocalIPs : get current IP of server. checks both IPv4 and Ipv6 to support dual stack environments
 func CheckLocalIPs() (ipv4, ipv6 net.IP) {
 	var ipv4String, ipv6String string
+	ipv4CheckUrl := "https://ipv4bot.whatismyipaddress.com"
+	ipv6CheckUrl := "https://ipv6bot.whatismyipaddress.com"
+	if len(config.IPv4CheckURL) > 0 {
+		ipv4CheckUrl = config.IPv4CheckURL
+	}
+	if len(config.IPv6CheckURL) > 0 {
+		ipv6CheckUrl = config.IPv6CheckURL
+	}
 
 	if config.UseIPv4 == nil || *(config.UseIPv4) {
-		ipv4String, _ = getURLBody("https://ipv4bot.whatismyipaddress.com")
+		ipv4String, _ = getURLBody(ipv4CheckUrl)
 		if ipv4String == "" {
 			log.Println("No IPv4 address found. Consider disabling IPv4 checks in the config `\"useIPv4\": false`")
 		} else {
@@ -128,6 +138,7 @@ func CheckLocalIPs() (ipv4, ipv6 net.IP) {
 			if ipv4 != nil {
 				// make sure we got back an actual ipv4 address
 				ipv4 = ipv4.To4()
+				log.Printf("Discovered IPv4 address `%s`", ipv4.String())
 			}
 			if ipv4 == nil {
 				log.Printf("Unable to parse `%s` as an IPv4 address", ipv4String)
@@ -136,13 +147,15 @@ func CheckLocalIPs() (ipv4, ipv6 net.IP) {
 	}
 
 	if config.UseIPv6 == nil || *(config.UseIPv6) {
-		ipv6String, _ = getURLBody("https://ipv6bot.whatismyipaddress.com")
+		ipv6String, _ = getURLBody(ipv6CheckUrl)
 		if ipv6String == "" {
 			log.Println("No IPv6 address found. Consider disabling IPv6 checks in the config `\"useIPv6\": false`")
 		} else {
 			ipv6 = net.ParseIP(ipv6String)
 			if ipv6 == nil {
 				log.Printf("Unable to parse `%s` as an IPv6 address", ipv6String)
+			} else {
+				log.Printf("Discovered IPv6 address `%s`", ipv6.String())
 			}
 		}
 	}
@@ -151,9 +164,7 @@ func CheckLocalIPs() (ipv4, ipv6 net.IP) {
 
 func getURLBody(url string) (string, error) {
 	request, err := http.Get(url)
-	if err != nil {
-		return "", err
-	}
+	checkError(err)
 	defer request.Body.Close()
 	body, err := ioutil.ReadAll(request.Body)
 	checkError(err)
