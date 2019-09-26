@@ -20,12 +20,12 @@ Once the module is fetched, you should be able to compile the program using `go 
 ```bash
 git clone https://github.com/anaganisk/digitalocean-dynamic-dns-ip.git
 ```
-create a file ".digitalocean-dynamic-ip.json"(dot prefix to hide the file) and place it user home directory and add the following json
+create a file ".digitalocean-dynamic-ip.json" (dot prefix to hide the file) and place it user home directory and add the following json
 
 ```json
 {
   "apikey": "samplekeydasjkdhaskjdhrwofihsamplekey",
-  "doPageSize" : 20,
+  "doPageSize": 20,
   "useIPv4": true,
   "useIPv6": false,
   "allowIPv4InIPv6": false,

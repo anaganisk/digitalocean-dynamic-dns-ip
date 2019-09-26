@@ -217,10 +217,10 @@ func UpdateRecords(domain Domain, ipv4, ipv6 net.IP) {
 	doRecords := GetDomainRecords(domain.Domain)
 	// look for the item to update
 	if len(doRecords) < 1 {
-		log.Printf("%s: No DNS records found in Digital Ocean", domain.Domain)
+		log.Printf("%s: No DNS records found in DigitalOcean", domain.Domain)
 		return
 	}
-	log.Printf("%s: %d DNS records found in Digital Ocean", domain.Domain, len(doRecords))
+	log.Printf("%s: %d DNS records found in DigitalOcean", domain.Domain, len(doRecords))
 	for _, toUpdateRecord := range domain.Records {
 		if toUpdateRecord.Type != "A" && toUpdateRecord.Type != "AAAA" {
 			log.Printf("%s: Unsupported type (Only A and AAAA records supported) for updates %+v", domain.Domain, toUpdateRecord)
@@ -338,7 +338,7 @@ func main() {
 	config = GetConfig()
 	currentIPv4, currentIPv6 := CheckLocalIPs()
 	if currentIPv4 == nil && currentIPv6 == nil {
-		log.Fatal("current IP addresses are not a valid, or both are disabled in the config. Check you configuration and internet connection")
+		log.Fatal("Current IP addresses are not valid, or both are disabled in the config. Check your configuration and internet connection.")
 	}
 	for _, domain := range config.Domains {
 		log.Printf("%s: START", domain.Domain)
