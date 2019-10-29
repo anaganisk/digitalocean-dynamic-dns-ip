@@ -3,19 +3,25 @@ jobs:
   build:
     docker:
       - image: circleci/golang:1.11
+    working_directory: ~/app
     steps:
       - checkout
       - run:
           name: Build
           command: |
             ./ci-build-script.sh .
+      - persist_to_workspace:
+          root: .
+          paths:
+            - ./releases
 
   publish-github-release:
     docker:
       - image: cibuilds/github:0.10
+    working_directory: ~/app
     steps:
       - attach_workspace:
-          at: ./releases
+          at: ~/app
       - run:
           name: "Publish Release on GitHub"
           command: |
