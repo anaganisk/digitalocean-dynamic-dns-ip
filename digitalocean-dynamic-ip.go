@@ -120,17 +120,17 @@ func usage() {
 //CheckLocalIPs : get current IP of server. checks both IPv4 and Ipv6 to support dual stack environments
 func CheckLocalIPs() (ipv4, ipv6 net.IP) {
 	var ipv4String, ipv6String string
-	ipv4CheckUrl := "https://ipv4bot.whatismyipaddress.com"
-	ipv6CheckUrl := "https://ipv6bot.whatismyipaddress.com"
+	ipv4CheckURL := "https://ipv4bot.whatismyipaddress.com"
+	ipv6CheckURL := "https://ipv6bot.whatismyipaddress.com"
 	if len(config.IPv4CheckURL) > 0 {
-		ipv4CheckUrl = config.IPv4CheckURL
+		ipv4CheckURL = config.IPv4CheckURL
 	}
 	if len(config.IPv6CheckURL) > 0 {
-		ipv6CheckUrl = config.IPv6CheckURL
+		ipv6CheckURL = config.IPv6CheckURL
 	}
 
 	if config.UseIPv4 == nil || *(config.UseIPv4) {
-		ipv4String, _ = getURLBody(ipv4CheckUrl)
+		ipv4String, _ = getURLBody(ipv4CheckURL)
 		if ipv4String == "" {
 			log.Println("No IPv4 address found. Consider disabling IPv4 checks in the config `\"useIPv4\": false`")
 		} else {
@@ -147,7 +147,7 @@ func CheckLocalIPs() (ipv4, ipv6 net.IP) {
 	}
 
 	if config.UseIPv6 == nil || *(config.UseIPv6) {
-		ipv6String, _ = getURLBody(ipv6CheckUrl)
+		ipv6String, _ = getURLBody(ipv6CheckURL)
 		if ipv6String == "" {
 			log.Println("No IPv6 address found. Consider disabling IPv6 checks in the config `\"useIPv6\": false`")
 		} else {

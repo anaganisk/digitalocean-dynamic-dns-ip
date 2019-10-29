@@ -1,4 +1,4 @@
-# DIGITAL OCEAN DYNAMIC IP API CLIENT
+# DIGITAL OCEAN DYNAMIC IP API CLIENT [![CircleCI](https://circleci.com/gh/anaganisk/digitalocean-dynamic-dns-ip/tree/master.svg?style=svg)](https://circleci.com/gh/anaganisk/digitalocean-dynamic-dns-ip/tree/master)
 
 A simple script in Go language to automatically update Digital ocean DNS records if you have a dynamic IP. Since it can be compiled on any platform, you can use it along with raspberrypi etc.
 
@@ -6,18 +6,20 @@ To find your Dynamic IP, this program will call out to https://ipv4bot.whatismyi
 
 ## Requirements
 
-Requires Git, Go 1.8+.
+- The record must already exist in DigitalOcean's DNS so that it can be updated.
+  (manually find your IP and add it to DO's DNS it will later be updated)
+- A Digital Ocean API key that can be created at https://cloud.digitalocean.com/account/api/tokens.
 
-Requires that the record already exists in DigitalOcean's DNS so that it can be updated.
-(manually find your IP and add it to DO's DNS it will later be updated)
+## Installation
 
-Requires a Digital Ocean API key that can be created at https://cloud.digitalocean.com/account/api/tokens.
+Download the prebuilt binaries from [releases](https://github.com/anaganisk/digitalocean-dynamic-dns-ip/releases),
 
-## Building
-
-You first need to install the "homedir" module if you aren't using it in another project. To install the module.
+or Build from source
 
 ```bash
+# Requires Git, Go 1.8+(GO 1.11 if you want to use GO111MODULE=on).
+# clone the repo in ~/go/src/github.com/anaganisk:
+git clone https://github.com/anaganisk/digitalocean-dynamic-dns-ip.git
 # Skip to next step, if you have GO111MODULE=on in your environment it is fetched automatically
 go get github.com/mitchellh/go-homedir
 # build the project
@@ -25,11 +27,6 @@ go build
 ```
 
 ## Usage
-
-```bash
-# clone the repo in ~/go/src/github.com/anaganisk:
-git clone https://github.com/anaganisk/digitalocean-dynamic-dns-ip.git
-```
 
 Create a file `.digitalocean-dynamic-ip.json` (dot prefix to hide the file) and place it in your home directory. Add the following JSON (or refer to the sample configuration file, `digitalocean-dynamic-ip.sample.json`):
 

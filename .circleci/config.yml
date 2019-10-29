@@ -2,18 +2,29 @@ version: 2
 jobs:
   build:
     docker:
-      - image: circleci/golang:1.8
-    working_directory: /go/src/github.com/anaganisk/digitalocean-dynamic-dns-ip
+      - image: circleci/golang:1.11
+    working_directory: ~/app
     steps:
       - checkout
-      - attach_workspace:
-          at: ./releases
       - run:
           name: Build
           command: |
-            echo 'export GO111MODULE=on' >> $BASH_ENV
-            source $BASH_ENV
-            ./ci-build-script.sh
+            ./ci-build-script.sh .
+      - persist_to_workspace:
+          root: .
+          paths:
+            - ./releases
+
+  publish-github-release:
+    docker:
+      - image: cibuilds/github:0.10
+    working_directory: ~/app
+    steps:
+      - attach_workspace:
+          at: ~/app
+      - run:
+          name: "Publish Release on GitHub"
+          command: |
             ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -delete ${CIRCLE_TAG} ./releases/
 
 workflows:
