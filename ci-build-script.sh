@@ -14,12 +14,12 @@ do
     platform_split=(${platform//\// })
     GOOS=${platform_split[0]}
     GOARCH=${platform_split[1]}
-    output_name=$package_name'-'$GOOS'-'$GOARCH
+    output_name='digitalocean-dynamic-dns-ip-'$GOOS'-'$GOARCH
     if [ $GOOS = "windows" ]; then
         output_name+='.exe'
     fi  
 
-    env GO111MODULE=on GOOS=$GOOS GOARCH=$GOARCH go build -o releases/$output_name $package
+    env GOOS=$GOOS GOARCH=$GOARCH go build -o releases/$output_name $package
     if [ $? -ne 0 ]; then
         echo 'An error has occurred! Aborting the script execution...'
         exit 1

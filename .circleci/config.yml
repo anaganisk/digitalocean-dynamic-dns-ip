@@ -3,7 +3,6 @@ jobs:
   build:
     docker:
       - image: circleci/golang:1.8
-    working_directory: /go/src/github.com/anaganisk/digitalocean-dynamic-dns-ip
     steps:
       - checkout
       - attach_workspace:
@@ -11,7 +10,7 @@ jobs:
       - run:
           name: Build
           command: |
-            ./ci-build-script.sh github.com/anaganisk/digitalocean-dynamic-dns-ip
+            ./ci-build-script.sh .
             ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -delete ${CIRCLE_TAG} ./releases/
 
 workflows:
