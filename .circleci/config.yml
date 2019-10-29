@@ -11,9 +11,7 @@ jobs:
       - run:
           name: Build
           command: |
-            echo 'export GO111MODULE=on' >> $BASH_ENV
-            source $BASH_ENV
-            ./ci-build-script.sh
+            ./ci-build-script.sh github.com/anaganisk/digitalocean-dynamic-dns-ip
             ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -delete ${CIRCLE_TAG} ./releases/
 
 workflows:
