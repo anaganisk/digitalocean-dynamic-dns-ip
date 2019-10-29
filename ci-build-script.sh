@@ -6,7 +6,6 @@ if [[ -z "$package" ]]; then
 fi
 package_split=(${package//\// })
 package_name=${package_split[-1]}
-
 platforms=("windows/amd64" "windows/386" "darwin/amd64" "linux/386" "linux/amd64" "linux/arm" "linux/arm64")
 mkdir releases
 for platform in "${platforms[@]}"
@@ -17,9 +16,8 @@ do
     output_name='digitalocean-dynamic-dns-ip-'$GOOS'-'$GOARCH
     if [ $GOOS = "windows" ]; then
         output_name+='.exe'
-    fi  
-
-    env GOOS=$GOOS GOARCH=$GOARCH go build -o releases/$output_name $package
+    fi
+    env GOOS=$GOOS GOARCH=$GOARCH go build -o releases/$output_name $package_name
     if [ $? -ne 0 ]; then
         echo 'An error has occurred! Aborting the script execution...'
         exit 1
