@@ -1,29 +1,43 @@
-# DIGITAL OCEAN DYNAMIC IP API CLIENT
+# DIGITAL OCEAN DYNAMIC IP API CLIENT [![CircleCI](https://circleci.com/gh/anaganisk/digitalocean-dynamic-dns-ip/tree/master.svg?style=svg)](https://circleci.com/gh/anaganisk/digitalocean-dynamic-dns-ip/tree/master)
+
 A simple script in Go language to automatically update Digital ocean DNS records if you have a dynamic IP. Since it can be compiled on any platform, you can use it along with raspberrypi etc.
 
-To find your Dynamic IP, this program will call out to https://ipv4bot.whatismyipaddress.com for ipv4 addresses and https://ipv6bot.whatismyipaddress.com for ipv6 addresses. This is to support dual-stack environments.
+To find your Dynamic IP, this program will call out to https://ipv4bot.whatismyipaddress.com for ipv4 addresses and https://ipv6bot.whatismyipaddress.com for ipv6 addresses. This is to support dual-stack environments. (These URLs can be customized; see Usage, below.)
 
-## requirements
-Requires Git and Go for building.
+## Requirements
 
-Requires that the record already exists in DigitalOcean's DNS so that it can be updated.
-(manually find your IP and add it to DO's DNS it will later be updated)
+- The record must already exist in DigitalOcean's DNS so that it can be updated.
+  (manually find your IP and add it to DO's DNS it will later be updated)
+- A Digital Ocean API key that can be created at https://cloud.digitalocean.com/account/api/tokens.
 
-Requires a Digital Ocean API key that can be created at https://cloud.digitalocean.com/account/api/tokens.
+## Installation
+
+Download the prebuilt binaries from [releases](https://github.com/anaganisk/digitalocean-dynamic-dns-ip/releases),
+
+or Build from source
+
+```bash
+# Requires Git, Go 1.8+(GO 1.11 if you want to use GO111MODULE=on).
+# clone the repo in ~/go/src/github.com/anaganisk:
+git clone https://github.com/anaganisk/digitalocean-dynamic-dns-ip.git
+# Skip to next step, if you have GO111MODULE=on in your environment it is fetched automatically
+go get github.com/mitchellh/go-homedir
+# build the project
+go build
+```
 
 ## Usage
-```bash
-git clone https://github.com/anaganisk/digitalocean-dynamic-dns-ip.git
-```
-create a file ".digitalocean-dynamic-ip.json"(dot prefix to hide the file) and place it user home directory and add the following json
+
+Create a file `.digitalocean-dynamic-ip.json` (dot prefix to hide the file) and place it in your home directory. Add the following JSON (or refer to the sample configuration file, `digitalocean-dynamic-ip.sample.json`):
 
 ```json
 {
   "apikey": "samplekeydasjkdhaskjdhrwofihsamplekey",
-  "doPageSize" : 20,
+  "doPageSize": 20,
   "useIPv4": true,
   "useIPv6": false,
   "allowIPv4InIPv6": false,
+  "ipv4CheckUrl": "https://ipv4bot.whatismyipaddress.com",
   "domains": [
     {
       "domain": "example.com",
@@ -47,6 +61,7 @@ create a file ".digitalocean-dynamic-ip.json"(dot prefix to hide the file) and p
   ]
 }
 ```
+
 The TTL can optionally be updated if passed in the configuration. Digital Ocean has a minimum TTL of 30 seconds. The `type` and the `name` must match existing records in the Digital Ocean DNS configuration. Only `types` of `A` and `AAAA` allowed at the moment.
 
 If you want to reduce the number of calls made to the digital ocean API and have more than 20 DNS records in your domain, you can adjust the `doPageSize` parameter. By default, Digital Ocean returns 20 records per page. Digital Ocean has a max page size of 200 items.
@@ -55,22 +70,25 @@ By default, the configuration checks both IPv4 and IPv6 addresses assuming your 
 
 The `allowIPv4InIPv6` configuration option will allow adding an IPv4 address to be used in a AAAA record for IPv6 lookups.
 
+The `ipv4CheckUrl` and `ipv6CheckUrl` configuration settings are optional. If set, they must be URLs which respond to a GET request, with a plaintext response containing only your IP address. If unset, they default to `https://ipv_bot.whatismyipaddress.com`.
+
 ```bash
-#run
-go build digitalocean-dynamic-ip.go
+# after running `go build digitalocean-dynamic-ip.go`, run:
 ./digitalocean-dynamic-ip
 ```
 
 Optionally, you can create the configuration file with any name wherever you want, and pass it as a command line argument:
-````bash
-#run
-./digitalocean-dynamic-ip /path/tp/my/config.json
+
+```bash
+#run:
+./digitalocean-dynamic-ip /path/to/my/config.json
 ```
 
 You can either set this to run periodically with a cronjob or use your own method.
+
 ```bash
-# run crontab -e
-# sample cron job task 
+# run `crontab -e` to edit your crontab
+# sample cron job task
 
 # m h  dom mon dow   command
 */5 * * * * /home/user/digitalocean-dynamic-dns-ip/digitalocean-dynamic-ip

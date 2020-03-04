@@ -3,6 +3,8 @@
   "doPageSize": 20,
   "useIPv4": true,
   "useIPv6": true,
+  "ipv4CheckUrl": "https://ipv4bot.whatismyipaddress.com",
+  "ipv6CheckUrl": "https://ipv6bot.whatismyipaddress.com",
   "allowIPv4InIPv6": false,
   "domains": [
     {
@@ -11,6 +13,10 @@
         {
           "name": "subdomainOrRecord",
           "type": "A"
+        },
+        {
+          "name": "subdomainOrRecord",
+          "type": "AAAA"
         }
       ]
     },

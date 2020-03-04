@@ -2,3 +2,7 @@ config.json
 digitalocean-dynamic-ip
 digitalocean-dynamic-dns-ip
 digitalocean-dynamic-ip.json
+
+# GoLand IDE
+.idea/
+releases
