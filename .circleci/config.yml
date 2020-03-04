@@ -10,6 +10,7 @@ jobs:
           name: Build
           command: |
             ./ci-build-script.sh .
+            cp ./digitalocean-dynamic-ip.sample.json ./releases/
       - persist_to_workspace:
           root: .
           paths:
