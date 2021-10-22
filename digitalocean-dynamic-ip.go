@@ -94,10 +94,12 @@ func GetConfig() ClientConfig {
 		configFile = flag.Args()[0]
 	}
 
+	log.Printf("Using Config file: %s", configFile)
+
 	getfile, err := ioutil.ReadFile(configFile)
 	checkError(err)
 	var config ClientConfig
-	json.Unmarshal(getfile, &config)
+	err = json.Unmarshal(getfile, &config)
 	checkError(err)
 	return config
 }
@@ -130,6 +132,7 @@ func CheckLocalIPs() (ipv4, ipv6 net.IP) {
 	}
 
 	if config.UseIPv4 == nil || *(config.UseIPv4) {
+		log.Printf("Checking IPv4 with URL: %s", ipv4CheckURL)
 		ipv4String, _ = getURLBody(ipv4CheckURL)
 		if ipv4String == "" {
 			log.Println("No IPv4 address found. Consider disabling IPv4 checks in the config `\"useIPv4\": false`")
@@ -147,6 +150,7 @@ func CheckLocalIPs() (ipv4, ipv6 net.IP) {
 	}
 
 	if config.UseIPv6 == nil || *(config.UseIPv6) {
+		log.Printf("Checking IPv6 with URL: %s", ipv6CheckURL)
 		ipv6String, _ = getURLBody(ipv6CheckURL)
 		if ipv6String == "" {
 			log.Println("No IPv6 address found. Consider disabling IPv6 checks in the config `\"useIPv6\": false`")
@@ -203,10 +207,11 @@ func getPage(url string) DOResponse {
 	checkError(err)
 	defer response.Body.Close()
 	body, err := ioutil.ReadAll(response.Body)
+	checkError(err)
 	// log.Println(string(body))
 	var jsonDOResponse DOResponse
-	e := json.Unmarshal(body, &jsonDOResponse)
-	checkError(e)
+	err = json.Unmarshal(body, &jsonDOResponse)
+	checkError(err)
 	return jsonDOResponse
 }
 
@@ -286,6 +291,7 @@ func UpdateRecords(domain Domain, ipv4, ipv6 net.IP) {
 				checkError(err)
 				defer response.Body.Close()
 				body, err := ioutil.ReadAll(response.Body)
+				checkError(err)
 				log.Printf("%s: DO update response for %s: %s", domain.Domain, doRecord.Name, string(body))
 				updated++
 			}
@@ -325,14 +331,14 @@ func toIPv6String(ip net.IP) (currentIP string) {
 	return currentIP
 }
 
-func areZero(bs []byte) bool {
-	for _, b := range bs {
-		if b != 0 {
-			return false
-		}
-	}
-	return true
-}
+// func areZero(bs []byte) bool {
+// 	for _, b := range bs {
+// 		if b != 0 {
+// 			return false
+// 		}
+// 	}
+// 	return true
+// }
 
 func main() {
 	config = GetConfig()
