@@ -1,4 +1,4 @@
-# DIGITAL OCEAN DYNAMIC IP API CLIENT [![CircleCI](https://circleci.com/gh/anaganisk/digitalocean-dynamic-dns-ip/tree/master.svg?style=svg)](https://circleci.com/gh/anaganisk/digitalocean-dynamic-dns-ip/tree/master)
+# DIGITAL OCEAN DYNAMIC IP API CLIENT 
 
 A simple script in Go language to automatically update Digital ocean DNS records if you have a dynamic IP. Since it can be compiled on any platform, you can use it along with raspberrypi etc.
 
