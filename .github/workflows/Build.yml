@@ -1,9 +1,8 @@
-name: Go
+name: Build
 
 on:
   push:
-    tags:
-      - '*'
+  
 jobs:
 
   build:
@@ -44,10 +43,4 @@ jobs:
                 echo 'An error has occurred! Aborting the script execution...'
                 exit 1
             fi
-        done
-    - uses: ncipollo/release-action@v1
-      name: "Create Release"
-      with:
-        artifacts: "releases/*"
-        token: ${{ secrets.GITHUB_TOKEN }}
-    
+        done    
