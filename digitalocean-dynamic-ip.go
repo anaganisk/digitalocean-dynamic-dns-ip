@@ -122,8 +122,8 @@ func usage() {
 //CheckLocalIPs : get current IP of server. checks both IPv4 and Ipv6 to support dual stack environments
 func CheckLocalIPs() (ipv4, ipv6 net.IP) {
 	var ipv4String, ipv6String string
-	ipv4CheckURL := "https://ipv4bot.whatismyipaddress.com"
-	ipv6CheckURL := "https://ipv6bot.whatismyipaddress.com"
+	ipv4CheckURL := "https://api.ipify.org/?format=text"
+	ipv6CheckURL := "https://api64.ipify.org/?format=text"
 	if len(config.IPv4CheckURL) > 0 {
 		ipv4CheckURL = config.IPv4CheckURL
 	}

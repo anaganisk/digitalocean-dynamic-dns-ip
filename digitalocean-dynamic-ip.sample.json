@@ -3,8 +3,8 @@
   "doPageSize": 20,
   "useIPv4": true,
   "useIPv6": true,
-  "ipv4CheckUrl": "https://ipv4bot.whatismyipaddress.com",
-  "ipv6CheckUrl": "https://ipv6bot.whatismyipaddress.com",
+  "ipv4CheckUrl": "https://api.ipify.org/?format=text",
+  "ipv6CheckUrl": "https://api64.ipify.org/?format=text",
   "allowIPv4InIPv6": false,
   "domains": [
     {

@@ -2,7 +2,7 @@
 
 A simple script in Go language to automatically update Digital ocean DNS records if you have a dynamic IP. Since it can be compiled on any platform, you can use it along with raspberrypi etc.
 
-To find your Dynamic IP, this program will call out to https://ipv4bot.whatismyipaddress.com for ipv4 addresses and https://ipv6bot.whatismyipaddress.com for ipv6 addresses. This is to support dual-stack environments. (These URLs can be customized; see Usage, below.)
+To find your Dynamic IP, this program will call out to https://api.ipify.org/ for ipv4 addresses and https://api64.ipify.org/ for ipv6 addresses. This is to support dual-stack environments. (These URLs can be customized; see Usage, below.)
 
 ## Requirements
 
@@ -37,7 +37,7 @@ Create a file `.digitalocean-dynamic-ip.json` (dot prefix to hide the file) and 
   "useIPv4": true,
   "useIPv6": false,
   "allowIPv4InIPv6": false,
-  "ipv4CheckUrl": "https://ipv4bot.whatismyipaddress.com",
+  "ipv4CheckUrl": "https://api.ipify.org/?format=text",
   "domains": [
     {
       "domain": "example.com",
@@ -70,7 +70,7 @@ By default, the configuration checks both IPv4 and IPv6 addresses assuming your 
 
 The `allowIPv4InIPv6` configuration option will allow adding an IPv4 address to be used in a AAAA record for IPv6 lookups.
 
-The `ipv4CheckUrl` and `ipv6CheckUrl` configuration settings are optional. If set, they must be URLs which respond to a GET request, with a plaintext response containing only your IP address. If unset, they default to `https://ipv_bot.whatismyipaddress.com`.
+The `ipv4CheckUrl` and `ipv6CheckUrl` configuration settings are optional. If set, they must be URLs which respond to a GET request, with a plaintext response containing only your IP address. If unset, they default to `https://api.ipify.org/?format=text` and `https://api64.ipify.org/?format=text` respectively.
 
 ```bash
 # after running `go build digitalocean-dynamic-ip.go`, run:
