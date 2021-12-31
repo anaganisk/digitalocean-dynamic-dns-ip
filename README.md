@@ -62,7 +62,7 @@ Create a file `.digitalocean-dynamic-ip.json` (dot prefix to hide the file) and 
 }
 ```
 
-The TTL can optionally be updated if passed in the configuration. Digital Ocean has a minimum TTL of 30 seconds. The `type` and the `name` must match existing records in the Digital Ocean DNS configuration. Only `types` of `A` and `AAAA` allowed at the moment.
+The TTL can optionally be updated if passed in the configuration. Digital Ocean has a minimum TTL of 30 seconds. The `type` and the `name` must match existing records in the Digital Ocean DNS configuration. Only `types` of `A` and `AAAA` allowed at the moment. Use the `name` of `"@"` to update a the top level domain record itself instead of a sub domain.
 
 If you want to reduce the number of calls made to the digital ocean API and have more than 20 DNS records in your domain, you can adjust the `doPageSize` parameter. By default, Digital Ocean returns 20 records per page. Digital Ocean has a max page size of 200 items.
 
