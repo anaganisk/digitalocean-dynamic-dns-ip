@@ -84,6 +84,13 @@ Optionally, you can create the configuration file with any name wherever you wan
 ./digitalocean-dynamic-ip /path/to/my/config.json
 ```
 
+By default the tool will not output anything on success. If you wish to see debug messages, you can use the `-d` or `-debug` command flags. All debug messages will be printed to *Standard Out*, while warnings and fatal errors will be printed to *Standard Error*. Warnings and Error messages are always printed regardless of the `-d`/`-debug` flag usage.
+
+```bash
+#run:
+./digitalocean-dynamic-ip -debug /path/to/my/config.json
+```
+
 You can either set this to run periodically with a cronjob or use your own method.
 
 ```bash

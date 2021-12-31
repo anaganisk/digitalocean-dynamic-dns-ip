@@ -19,8 +19,31 @@ import (
 
 func checkError(err error) {
 	if err != nil {
+		log.SetOutput(os.Stderr)
 		log.Fatal(err)
 	}
+}
+
+// logError Logs an error message to Stderr and exits the program
+func logError(msg string) {
+	log.SetOutput(os.Stderr)
+	log.Fatal(msg)
+}
+
+// logWarning Logs a warning message to Stderr without exiting the program
+func logWarning(msg string) {
+	old := log.Default().Writer()
+	log.SetOutput(os.Stderr)
+	log.Println(msg)
+	log.SetOutput(old)
+}
+
+// logWarning Logs a warning message to Stderr without exiting the program
+func logWarningf(format string, v ...interface{}) {
+	old := log.Default().Writer()
+	log.SetOutput(os.Stderr)
+	log.Printf(format, v...)
+	log.SetOutput(old)
 }
 
 var config ClientConfig
@@ -77,11 +100,21 @@ type DOResponse struct {
 func GetConfig() ClientConfig {
 	cmdHelp := flag.Bool("h", false, "Show the help message")
 	cmdHelp2 := flag.Bool("help", false, "Show the help message")
+	cmdDbg := flag.Bool("d", false, "Outputs log messages to the standard console")
+	cmdDbg2 := flag.Bool("debug", false, "Outputs log messages to the standard console")
 	flag.Parse()
 
 	if *cmdHelp || *cmdHelp2 {
 		usage()
 		os.Exit(1)
+	}
+
+	if !((*cmdDbg) || (*cmdDbg2)) {
+		// if no debug option was selected, discard all debug output
+		log.SetOutput(ioutil.Discard)
+	} else {
+		// default debug output to Stdout instead of Stderr
+		log.SetOutput(os.Stdout)
 	}
 
 	configFile := ""
@@ -107,12 +140,14 @@ func GetConfig() ClientConfig {
 func usage() {
 	os.Stdout.WriteString(fmt.Sprintf("To use this program you can specify the following command options:\n"+
 		"-h | -help\n\tShow this help message\n"+
+		"-d | -debug\n\tPrint debug messages to standard output\n"+
 		"[config_file]\n\tlocation of the configuration file\n\n"+
 		"If the [config_file] parameter is not passed, then the default\n"+
 		"config location of ~/.digitalocean-dynamic-ip.json will be used.\n\n"+
 		"example usages:\n\t%[1]s -help\n"+
 		"\t%[1]s\n"+
 		"\t%[1]s %[2]s\n"+
+		"\t%[1]s -debug %[2]s\n"+
 		"",
 		os.Args[0],
 		"/path/to/my/config.json",
@@ -135,7 +170,7 @@ func CheckLocalIPs() (ipv4, ipv6 net.IP) {
 		log.Printf("Checking IPv4 with URL: %s", ipv4CheckURL)
 		ipv4String, _ = getURLBody(ipv4CheckURL)
 		if ipv4String == "" {
-			log.Println("No IPv4 address found. Consider disabling IPv4 checks in the config `\"useIPv4\": false`")
+			logWarning("No IPv4 address found. Consider disabling IPv4 checks in the config `\"useIPv4\": false`")
 		} else {
 			ipv4 = net.ParseIP(ipv4String)
 			if ipv4 != nil {
@@ -144,7 +179,7 @@ func CheckLocalIPs() (ipv4, ipv6 net.IP) {
 				log.Printf("Discovered IPv4 address `%s`", ipv4.String())
 			}
 			if ipv4 == nil {
-				log.Printf("Unable to parse `%s` as an IPv4 address", ipv4String)
+				logWarningf("Unable to parse `%s` as an IPv4 address", ipv4String)
 			}
 		}
 	}
@@ -153,11 +188,11 @@ func CheckLocalIPs() (ipv4, ipv6 net.IP) {
 		log.Printf("Checking IPv6 with URL: %s", ipv6CheckURL)
 		ipv6String, _ = getURLBody(ipv6CheckURL)
 		if ipv6String == "" {
-			log.Println("No IPv6 address found. Consider disabling IPv6 checks in the config `\"useIPv6\": false`")
+			logWarning("No IPv6 address found. Consider disabling IPv6 checks in the config `\"useIPv6\": false`")
 		} else {
 			ipv6 = net.ParseIP(ipv6String)
 			if ipv6 == nil {
-				log.Printf("Unable to parse `%s` as an IPv6 address", ipv6String)
+				logWarningf("Unable to parse `%s` as an IPv6 address", ipv6String)
 			} else {
 				log.Printf("Discovered IPv6 address `%s`", ipv6.String())
 			}
@@ -222,22 +257,22 @@ func UpdateRecords(domain Domain, ipv4, ipv6 net.IP) {
 	doRecords := GetDomainRecords(domain.Domain)
 	// look for the item to update
 	if len(doRecords) < 1 {
-		log.Printf("%s: No DNS records found in DigitalOcean", domain.Domain)
+		logWarningf("%s: No DNS records found in DigitalOcean", domain.Domain)
 		return
 	}
 	log.Printf("%s: %d DNS records found in DigitalOcean", domain.Domain, len(doRecords))
 	for _, toUpdateRecord := range domain.Records {
 		if toUpdateRecord.Type != "A" && toUpdateRecord.Type != "AAAA" {
-			log.Printf("%s: Unsupported type (Only A and AAAA records supported) for updates %+v", domain.Domain, toUpdateRecord)
+			logWarningf("%s: Unsupported type (Only A and AAAA records supported) for updates %+v", domain.Domain, toUpdateRecord)
 			continue
 		}
 		if ipv4 == nil && toUpdateRecord.Type == "A" {
-			log.Printf("%s: You are trying to update an IPv4 A record with no IPv4 address: config: %+v", domain.Domain, toUpdateRecord)
+			logWarningf("%s: You are trying to update an IPv4 A record with no IPv4 address: config: %+v", domain.Domain, toUpdateRecord)
 			continue
 		}
 		if toUpdateRecord.ID > 0 {
 			// update the record directly. skip the extra search
-			log.Printf("%s: Unable to directly update records yet. Record: %+v", domain.Domain, toUpdateRecord)
+			logWarningf("%s: Unable to directly update records yet. Record: %+v", domain.Domain, toUpdateRecord)
 			continue
 		}
 
@@ -249,7 +284,7 @@ func UpdateRecords(domain Domain, ipv4, ipv6 net.IP) {
 				ipv6 = ipv4
 			}
 
-			log.Printf("%s: You are trying to update an IPv6 AAAA record without an IPv6 address: ip: %s config: %+v",
+			logWarningf("%s: You are trying to update an IPv6 AAAA record without an IPv6 address: ip: %s config: %+v",
 				domain.Domain,
 				ipv6,
 				toUpdateRecord,
@@ -344,8 +379,9 @@ func main() {
 	config = GetConfig()
 	currentIPv4, currentIPv6 := CheckLocalIPs()
 	if currentIPv4 == nil && currentIPv6 == nil {
-		log.Fatal("Current IP addresses are not valid, or both are disabled in the config. Check your configuration and internet connection.")
+		logError("Current IP addresses are not valid, or both are disabled in the config. Check your configuration and internet connection.")
 	}
+
 	for _, domain := range config.Domains {
 		log.Printf("%s: START", domain.Domain)
 		UpdateRecords(domain, currentIPv4, currentIPv6)
