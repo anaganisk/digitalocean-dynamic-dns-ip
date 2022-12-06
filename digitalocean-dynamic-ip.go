@@ -13,8 +13,6 @@ import (
 	"net/url"
 	"os"
 	"strconv"
-
-	homedir "github.com/mitchellh/go-homedir"
 )
 
 func checkError(err error) {
@@ -117,16 +115,11 @@ func GetConfig() ClientConfig {
 		log.SetOutput(os.Stdout)
 	}
 
-	configFile := ""
 	if len(flag.Args()) == 0 {
-		var err error
-		configFile, err = homedir.Dir()
-		checkError(err)
-		configFile += "/.digitalocean-dynamic-ip.json"
-	} else {
-		configFile = flag.Args()[0]
+		logError("Missing required argument with config file path.")
 	}
 
+	configFile := flag.Args()[0]
 	log.Printf("Using Config file: %s", configFile)
 
 	getfile, err := ioutil.ReadFile(configFile)
@@ -142,8 +135,6 @@ func usage() {
 		"-h | -help\n\tShow this help message\n"+
 		"-d | -debug\n\tPrint debug messages to standard output\n"+
 		"[config_file]\n\tlocation of the configuration file\n\n"+
-		"If the [config_file] parameter is not passed, then the default\n"+
-		"config location of ~/.digitalocean-dynamic-ip.json will be used.\n\n"+
 		"example usages:\n\t%[1]s -help\n"+
 		"\t%[1]s\n"+
 		"\t%[1]s %[2]s\n"+

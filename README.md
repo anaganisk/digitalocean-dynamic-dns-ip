@@ -77,7 +77,7 @@ The `ipv4CheckUrl` and `ipv6CheckUrl` configuration settings are optional. If se
 ./digitalocean-dynamic-ip
 ```
 
-Optionally, you can create the configuration file with any name wherever you want, and pass it as a command line argument:
+Configuration file location must be specified as a positional argument:
 
 ```bash
 #run:
