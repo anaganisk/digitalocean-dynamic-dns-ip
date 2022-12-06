@@ -1,4 +1,5 @@
 {
+  "interval": "30m",
   "apikey": "samplekeydasjkdhaskjdhrwofihsamplekey",
   "doPageSize": 20,
   "useIPv4": true,

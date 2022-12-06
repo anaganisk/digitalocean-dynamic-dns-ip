@@ -12,7 +12,10 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"os/signal"
 	"strconv"
+	"syscall"
+	"time"
 )
 
 func checkError(err error) {
@@ -48,6 +51,7 @@ var config ClientConfig
 
 // ClientConfig : configuration json
 type ClientConfig struct {
+	Interval        string   `json:"interval"`
 	APIKey          string   `json:"apiKey"`
 	DOPageSize      int      `json:"doPageSize"`
 	UseIPv4         *bool    `json:"useIPv4"`
@@ -366,8 +370,9 @@ func toIPv6String(ip net.IP) (currentIP string) {
 // 	return true
 // }
 
-func main() {
-	config = GetConfig()
+// updateAllDomains retrieves the current IP addresses and loops through all
+// domains in the config to update them with the current IPs.
+func updateAllDomains(config ClientConfig) {
 	currentIPv4, currentIPv6 := CheckLocalIPs()
 	if currentIPv4 == nil && currentIPv6 == nil {
 		logError("Current IP addresses are not valid, or both are disabled in the config. Check your configuration and internet connection.")
@@ -378,4 +383,31 @@ func main() {
 		UpdateRecords(domain, currentIPv4, currentIPv6)
 		log.Printf("%s: END", domain.Domain)
 	}
+}
+
+func main() {
+	config = GetConfig()
+
+	interval, err := time.ParseDuration(config.Interval)
+	checkError(err)
+
+	ticker := time.NewTicker(interval)
+	cancelChan := make(chan os.Signal)
+	signal.Notify(cancelChan, syscall.SIGTERM, syscall.SIGINT)
+
+	// Run once immediately before waiting for the ticker
+	updateAllDomains(config)
+
+	func() {
+		for {
+			select {
+			case <-cancelChan:
+				return
+			case <-ticker.C:
+				updateAllDomains(config)
+			}
+		}
+	}()
+
+	ticker.Stop()
 }

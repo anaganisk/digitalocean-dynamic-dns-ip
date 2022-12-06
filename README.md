@@ -32,6 +32,7 @@ Create a file `.digitalocean-dynamic-ip.json` (dot prefix to hide the file) and 
 
 ```json
 {
+  "interval": "30m",
   "apikey": "samplekeydasjkdhaskjdhrwofihsamplekey",
   "doPageSize": 20,
   "useIPv4": true,
@@ -89,14 +90,4 @@ By default the tool will not output anything on success. If you wish to see debu
 ```bash
 #run:
 ./digitalocean-dynamic-ip -debug /path/to/my/config.json
-```
-
-You can either set this to run periodically with a cronjob or use your own method.
-
-```bash
-# run `crontab -e` to edit your crontab
-# sample cron job task
-
-# m h  dom mon dow   command
-*/5 * * * * /home/user/digitalocean-dynamic-dns-ip/digitalocean-dynamic-ip
 ```
