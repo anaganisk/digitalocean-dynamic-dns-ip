@@ -12,9 +12,10 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"os/signal"
 	"strconv"
-
-	homedir "github.com/mitchellh/go-homedir"
+	"syscall"
+	"time"
 )
 
 func checkError(err error) {
@@ -50,6 +51,7 @@ var config ClientConfig
 
 // ClientConfig : configuration json
 type ClientConfig struct {
+	Interval        string   `json:"interval"`
 	APIKey          string   `json:"apiKey"`
 	DOPageSize      int      `json:"doPageSize"`
 	UseIPv4         *bool    `json:"useIPv4"`
@@ -96,7 +98,7 @@ type DOResponse struct {
 	} `json:"links"`
 }
 
-//GetConfig : get configuration file ~/.digitalocean-dynamic-ip.json
+// GetConfig : get configuration file ~/.digitalocean-dynamic-ip.json
 func GetConfig() ClientConfig {
 	cmdHelp := flag.Bool("h", false, "Show the help message")
 	cmdHelp2 := flag.Bool("help", false, "Show the help message")
@@ -117,16 +119,11 @@ func GetConfig() ClientConfig {
 		log.SetOutput(os.Stdout)
 	}
 
-	configFile := ""
 	if len(flag.Args()) == 0 {
-		var err error
-		configFile, err = homedir.Dir()
-		checkError(err)
-		configFile += "/.digitalocean-dynamic-ip.json"
-	} else {
-		configFile = flag.Args()[0]
+		logError("Missing required argument with config file path.")
 	}
 
+	configFile := flag.Args()[0]
 	log.Printf("Using Config file: %s", configFile)
 
 	getfile, err := ioutil.ReadFile(configFile)
@@ -142,8 +139,6 @@ func usage() {
 		"-h | -help\n\tShow this help message\n"+
 		"-d | -debug\n\tPrint debug messages to standard output\n"+
 		"[config_file]\n\tlocation of the configuration file\n\n"+
-		"If the [config_file] parameter is not passed, then the default\n"+
-		"config location of ~/.digitalocean-dynamic-ip.json will be used.\n\n"+
 		"example usages:\n\t%[1]s -help\n"+
 		"\t%[1]s\n"+
 		"\t%[1]s %[2]s\n"+
@@ -154,7 +149,7 @@ func usage() {
 	))
 }
 
-//CheckLocalIPs : get current IP of server. checks both IPv4 and Ipv6 to support dual stack environments
+// CheckLocalIPs : get current IP of server. checks both IPv4 and Ipv6 to support dual stack environments
 func CheckLocalIPs() (ipv4, ipv6 net.IP) {
 	var ipv4String, ipv6String string
 	ipv4CheckURL := "https://api.ipify.org/?format=text"
@@ -210,7 +205,7 @@ func getURLBody(url string) (string, error) {
 	return string(body), nil
 }
 
-//GetDomainRecords : Get DNS records of current domain.
+// GetDomainRecords : Get DNS records of current domain.
 func GetDomainRecords(domain string) []DNSRecord {
 	ret := make([]DNSRecord, 0)
 	var page DOResponse
@@ -375,8 +370,9 @@ func toIPv6String(ip net.IP) (currentIP string) {
 // 	return true
 // }
 
-func main() {
-	config = GetConfig()
+// updateAllDomains retrieves the current IP addresses and loops through all
+// domains in the config to update them with the current IPs.
+func updateAllDomains(config ClientConfig) {
 	currentIPv4, currentIPv6 := CheckLocalIPs()
 	if currentIPv4 == nil && currentIPv6 == nil {
 		logError("Current IP addresses are not valid, or both are disabled in the config. Check your configuration and internet connection.")
@@ -387,4 +383,31 @@ func main() {
 		UpdateRecords(domain, currentIPv4, currentIPv6)
 		log.Printf("%s: END", domain.Domain)
 	}
+}
+
+func main() {
+	config = GetConfig()
+
+	interval, err := time.ParseDuration(config.Interval)
+	checkError(err)
+
+	ticker := time.NewTicker(interval)
+	cancelChan := make(chan os.Signal)
+	signal.Notify(cancelChan, syscall.SIGTERM, syscall.SIGINT)
+
+	// Run once immediately before waiting for the ticker
+	updateAllDomains(config)
+
+	func() {
+		for {
+			select {
+			case <-cancelChan:
+				return
+			case <-ticker.C:
+				updateAllDomains(config)
+			}
+		}
+	}()
+
+	ticker.Stop()
 }
