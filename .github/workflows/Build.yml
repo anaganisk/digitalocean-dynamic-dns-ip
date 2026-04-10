@@ -2,24 +2,50 @@ name: Build
 
 on:
   push:
-  
+  pull_request:
+
 jobs:
 
-  build:
+  test:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v6
 
     - name: Set up Go
-      uses: actions/setup-go@v2
+      uses: actions/setup-go@v6
       with:
-        go-version: 1.17
+        go-version: 1.26
+
+    - name: Run tests with coverage
+      run: |
+        set -o pipefail
+        go test -coverprofile=coverage ./... 2>&1 | tee test-output.txt
+
+    - name: Upload test artifacts
+      if: always()
+      uses: actions/upload-artifact@v7
+      with:
+        name: test-artifacts
+        path: |
+          coverage.out
+          test-output.txt
+
+  build:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v6
+
+    - name: Set up Go
+      uses: actions/setup-go@v6
+      with:
+        go-version: 1.26
 
     - name: Build
       run: |
         #see https://en.wikipedia.org/wiki/Raspberry_Pi#Specifications for RPi arm versions
         #see https://github.com/golang/go/wiki/GoArm
-        platforms=("windows/amd64" "windows/386" "darwin/amd64" "linux/386" "linux/amd64" "linux/arm/6" "linux/arm/7" "linux/arm64/8" "freebsd/386" "freebsd/amd64")
+        platforms=("windows/amd64" "windows/386" "windows/arm64" "darwin/amd64" "darwin/arm64" "linux/386" "linux/amd64" "linux/arm/6" "linux/arm/7" "linux/arm64/8" "freebsd/386" "freebsd/amd64")
         mkdir -p releases
         for platform in "${platforms[@]}"
         do

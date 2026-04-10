@@ -1,7 +1,9 @@
 config.json
 digitalocean-dynamic-ip
 digitalocean-dynamic-dns-ip
+*.exe
 digitalocean-dynamic-ip.json
+coverage*
 
 # GoLand IDE
 .idea/

@@ -20,8 +20,6 @@ or Build from source
 # Requires Git, Go 1.8+(GO 1.11 if you want to use GO111MODULE=on).
 # clone the repo in ~/go/src/github.com/anaganisk:
 git clone https://github.com/anaganisk/digitalocean-dynamic-dns-ip.git
-# Skip to next step, if you have GO111MODULE=on in your environment it is fetched automatically
-go get github.com/mitchellh/go-homedir
 # build the project
 go build
 ```
@@ -71,6 +69,8 @@ By default, the configuration checks both IPv4 and IPv6 addresses assuming your 
 The `allowIPv4InIPv6` configuration option will allow adding an IPv4 address to be used in a AAAA record for IPv6 lookups.
 
 The `ipv4CheckUrl` and `ipv6CheckUrl` configuration settings are optional. If set, they must be URLs which respond to a GET request, with a plaintext response containing only your IP address. If unset, they default to `https://api.ipify.org/?format=text` and `https://api64.ipify.org/?format=text` respectively.
+
+The `ipvCheckTimeoutSeconds` configuration option is optional and controls the timeout (in seconds) for HTTP requests when checking your IP address. If unset or set to 0, the default timeout of 15 seconds will be used. This prevents the application from hanging indefinitely if the IP check service is unresponsive.
 
 ```bash
 # after running `go build digitalocean-dynamic-ip.go`, run:

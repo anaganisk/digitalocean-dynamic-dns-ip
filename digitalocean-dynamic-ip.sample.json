@@ -6,6 +6,7 @@
   "ipv4CheckUrl": "https://api.ipify.org/?format=text",
   "ipv6CheckUrl": "https://api64.ipify.org/?format=text",
   "allowIPv4InIPv6": false,
+  "ipvCheckTimeoutSeconds": 10,
   "domains": [
     {
       "domain": "example.com",
